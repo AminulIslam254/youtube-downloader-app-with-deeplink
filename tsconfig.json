@@ -1,3 +1,12 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["dom", "es2015"],
+    "noImplicitAny": false,
+    "resolveJsonModule": true,
+    "moduleResolution": "node16",
+    "module": "Node16" // Set the 'module' option to 'Node16'
+  },
+  "types": ["jest"]
 }
