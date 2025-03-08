@@ -28,6 +28,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactMethod;
 
 public class YtFunctions extends Activity {
 
@@ -90,7 +91,7 @@ public class YtFunctions extends Activity {
         });
         mainLayout.addView(btn);
     }
-
+    @ReactMethod
     private void downloadFromUrl(String youtubeDlUrl, String downloadTitle, String fileName, ReactApplicationContext context) {
         Uri uri = Uri.parse(youtubeDlUrl);
         DownloadManager.Request request = new DownloadManager.Request(uri);
