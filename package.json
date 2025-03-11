@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
+    
   },
   "dependencies": {
     "@react-navigation/native": "^7.0.15",

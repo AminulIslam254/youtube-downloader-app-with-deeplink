@@ -46,7 +46,7 @@ const MainHome = () => {
   }
 
   const handleDownload = (selectedOption: FetchedVideoDataInterface) => {
-    MyMainModule.downloadFromUrl(selectedOption.url, selectedOption.title, selectedOption.title, ((response) => {
+    MyMainModule.downloadFromYoutube(selectedOption.url, selectedOption.title, selectedOption.title, ((response) => {
       setIsLoading(false)
       setRenderKey(Math.random())
       setIsVisible(false)
@@ -106,6 +106,7 @@ const MainHome = () => {
       }
     })()
   }, [])
+  
 
 
 

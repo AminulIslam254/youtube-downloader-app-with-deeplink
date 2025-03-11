@@ -17,6 +17,17 @@ buildscript {
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
-}
+   
 
+}
+// plugins {
+//         id "com.github.node-gradle.node" version "3.5.0"
+//     }
+//  node {
+//         version = "23.9.0"  // ✅ Replace with your actual Node.js version
+//         npmVersion = "8.19.2"  // ✅ Replace with your npm version
+//         download = false  // ✅ Prevent Gradle from downloading Node.js
+//         workDir = file("../node_modules/node")  // ✅ Use local Node.js
+//     }
 apply plugin: "com.facebook.react.rootproject"
+

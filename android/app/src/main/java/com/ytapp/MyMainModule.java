@@ -21,6 +21,13 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.HashMap;
 import android.widget.Toast;
@@ -38,14 +45,27 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.yausername.youtubedl_android.YoutubeDL;
+import com.yausername.youtubedl_android.YoutubeDLException;
+import com.yausername.youtubedl_android.YoutubeDLRequest;
 
 import android.Manifest;
 
+import java.io.*;
+
+
+
 
 public class MyMainModule extends ReactContextBaseJavaModule  {
+    private static final String TAG = MyMainModule.class.getSimpleName();
     MyMainModule(ReactApplicationContext context) {
 
         super(context);
+        try {
+            YoutubeDL.getInstance().init(context);
+        } catch (Exception e) {
+            Log.e(TAG, "failed to initialize youtubedl-android", e);
+        }
     }
 
     @Override
@@ -93,6 +113,102 @@ public class MyMainModule extends ReactContextBaseJavaModule  {
     public void messageWarning(String message){
         Toast.makeText(getReactApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
+
+
+
+
+    @ReactMethod
+    public void downloadFromYoutube(String youtubeDlUrl, String downloadTitle, String fileName,Callback callback){
+        ReactApplicationContext context=getReactApplicationContext();
+//        String ytDlpPath=installYtDlpIfneeded(context);
+//
+//        String directURL= getYoutubeDownloadURL(ytDlpPath,youtubeDlUrl);
+//        Log.d("got info",ytDlpPath+" "+directURL);
+//        downloadFromUrl(directURL,downloadTitle,fileName,callback);
+
+        Log.d("Url from source",youtubeDlUrl);
+        File youtubeDLDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "youtubedl-android");
+        YoutubeDLRequest request = new YoutubeDLRequest(youtubeDlUrl);
+        request.addOption("-o", youtubeDLDir.getAbsolutePath() + "/%(title)s.%(ext)s");
+        YoutubeDL.getInstance().execute(request,null, (progress, etaInSeconds,line) -> {
+            System.out.println(progress + "% (ETA " + etaInSeconds + " seconds) | " + line);
+            return null;
+        });
+    }
+//    @ReactMethod
+//    public void checkAssests(){
+//        ReactApplicationContext context=getReactApplicationContext();
+//        try {
+//            String[] files = context.getAssets().list("");
+//            for (String file : files) {
+//                Log.d("Assets", "File: " + file);
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    public String installYtDlpIfneeded(ReactApplicationContext context){
+        File ytDlpFile=new File(context.getFilesDir(),"yt-dlp");
+        Log.d("yt-dlp", "Checking file: " + ytDlpFile.getAbsolutePath() + ", Exists: " + ytDlpFile.exists());
+        try {
+            if(!ytDlpFile.exists()){
+                URL url = new URL("https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp");
+                HttpURLConnection connection=(HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
+                connection.connect();
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    Log.e("yt-dlp", "Server returned HTTP " + connection.getResponseCode());
+                    return "";
+                }
+                InputStream in =connection.getInputStream();
+                File ylDlpFile=new File(context.getFilesDir(),"yt-dlp");
+                Log.d("yldlpFile", "Path: " + ylDlpFile.getAbsolutePath() + ", Exists: " + ylDlpFile.exists());
+                FileOutputStream out = new FileOutputStream(ylDlpFile);
+                byte[] buffer= new byte[1024];
+                int length;
+                while ((length = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, length);
+                }
+
+                in.close();
+                out.close();
+                connection.disconnect();
+                ylDlpFile.setExecutable(true,false);
+                Log.d("yt-dlp", "yt-dlp downloaded and saved at: " + ylDlpFile.getAbsolutePath());
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return ytDlpFile.getAbsolutePath();
+
+    }
+
+    public String getYoutubeDownloadURL(String ytDlpPath,String youtubeUrl){
+        try{
+            ProcessBuilder pb = new ProcessBuilder("/system/bin/sh", "-c", ytDlpPath + " -f best -g " + youtubeUrl);
+            pb.redirectErrorStream(true);
+            Process process=pb.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String url= reader.readLine();
+            Log.d("URL came",url);
+            process.waitFor();
+            if (url != null && url.startsWith("http")) {
+                return url;
+            }
+
+        }catch (Exception e){
+            Log.e("Exception happened", Log.getStackTraceString(e));
+
+        }
+        return null;
+    }
+
+
 
     @ReactMethod
     public void downloadFromUrl(String youtubeDlUrl, String downloadTitle, String fileName,Callback callback) {
